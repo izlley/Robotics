@@ -2,7 +2,7 @@
 
 > **다음 세션 첫 명령**: 이 파일을 먼저 읽고, 이어서 [`memory/INDEX.md`](memory/INDEX.md) → 가장 최근 `sessions/*.md` 1~2개 순서로 읽어 컨텍스트를 복원하세요.
 >
-> **Last updated**: 2026-05-18 (session-001 종료 시점)
+> **Last updated**: 2026-05-18 (session-002 종료 시점, RT-2 정독 완료)
 
 ---
 
@@ -14,7 +14,7 @@
 
 - **상위 트랙**: 학습 절차 (a) "기본 개념·이론 학습"
 - **세부 트랙**: Track A — 이론 심화 (논문 정독)
-- **현재 페이즈**: Phase 0·1 + Git prep 완료. **다음은 Phase 2 (자료 수집)**
+- **현재 페이즈**: Phase 0·1 + Git prep + Initial push 완료. Phase 2/3 진행 중 (RT-2 정독 1편 완료, 7편 + 보조 자료 잔여)
 - **전체 플랜 파일**: `/root/.claude/plans/workspace-izlley-sllm-robotics-rustling-snowflake.md` (pod-local, 비영구 위험. 본 SESSION_HANDOFF가 복구의 source of truth)
 
 ## 3. 최근 완료된 작업
@@ -26,14 +26,17 @@
 - [x] Phase 1: `papers/{core-models,related-models,foundations,data-benchmarks,surveys}/` 생성 + 기존 π0 4편 → `papers/core-models/` 이동
 - [x] Phase 1: `reports/{papers,external,synthesis}/` 생성 + `reports/papers/_template.md` (9-섹션) 작성
 - [x] Git prep: `git init -b main` + `.gitignore` + `README.md` + remote `origin = https://github.com/izlley/Robotics.git` 설정
+- [x] **Initial commit c89b6ee + push to origin/main 완료** (18 files, 93036 insertions). main → origin/main 추적 설정됨.
+- [x] **RT-2 정독 + 요약 완료** — `papers/core-models/RT-2-*.pdf` 다운로드, `reports/papers/RT-2.md` 작성, `memory/learnings/` 2건 추가
 
 ## 4. 다음 즉시 작업 (이어서 진행)
 
-1. **사용자가 직접 수행할 액션**: 
-   - `cd /workspace/izlley/sllm/Robotics && git add -A && git commit -m "Initial commit ..." && git push -u origin main`
-   - (또는 Claude에게 명시적으로 commit/push 요청)
-2. **Phase 2**: 1차 batch 자료 다운로드 — RT-2 / OpenVLA / SmolVLA / GR00T N1 (PDF는 `papers/core-models/`) + Diffusion Policy / ACT (→ `papers/foundations/`) + Open X-Embodiment (→ `papers/data-benchmarks/`) + VLA survey 1편 (→ `papers/surveys/`)
-3. **Phase 3 시작**: RT-2 정독 → `reports/papers/RT-2.md` 작성 (워크플로우 검증)
+1. **⚠️ 보안: PAT rotate 필요** — `.keys`의 PAT이 첫 push 시도 시 에러 메시지에 노출됨. GitHub Settings → Developer settings → PAT → 해당 토큰 Revoke 후 재발급 권장.
+2. **RT-2 작업 commit/push** — 새로 추가된 파일: PDF, RT-2.md, learnings/ 2건, INDEX.md, SESSION_HANDOFF, sessions/ 로그. 사용자 직접 또는 명시 요청 시 Claude 진행.
+3. **Phase 3 다음 논문 — OpenVLA**: PDF 다운로드 + 정독 + `reports/papers/OpenVLA.md` 작성. RT-2의 오픈 버전이므로 RT-2.md를 함께 cross-reference하면 효율적.
+4. **Phase 3 이어서**: SmolVLA → π0 시리즈(보유 PDF 활용) → GR00T N1 순. 각 논문 별도 turn.
+5. **보조 자료 수집** (interleave): RT-2 정독 완료 → 다음 논문 들어가기 전에 Diffusion Policy / ACT / Open X-Embodiment PDF 추가 다운로드 권장 (OpenVLA 정독에 필요).
+6. 향후 push 시 인증: origin URL에 PAT을 박지 않았으므로 매 push마다 PAT 필요. 옵션: (a) `.keys`에서 매번 읽기, (b) SSH 키 전환, (c) `git config credential.helper` 사용
 
 ## 5. 미해결 질문 / 결정 대기 항목
 

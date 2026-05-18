@@ -12,12 +12,14 @@
 
 ## Learnings
 
-_(아직 없음 — 논문 정독 시작 후 채워질 예정)_
+- [RT-2: action-as-token 패러다임](learnings/rt2-action-as-token-paradigm.md) — 256 bin × 8 차원, VLM vocab의 token slot 빌려 action ID로 재해석
+- [RT-2: co-fine-tuning trick](learnings/rt2-co-fine-tuning-trick.md) — web data를 50~66% 비중으로 robot fine-tune에 함께 흘리면 generalization +10pp
 
 ## Preferences
 
 - [사용자 역할·배경](preferences/user-role.md) — dnotitia LLM 엔지니어, LLM/VLM 배경, 로보틱스 신규 진입
 - [Pod 환경 제약](preferences/pod-environment.md) — CephFS만 영구, H200 kubectl-only, offload 금지 등
+- [Summary 작성 스타일](preferences/summary-style.md) — md 요약이 학습 교재. self-contained, 수식·예시·analogy·메커니즘 포함, 400~800줄 권장
 
 ## References
 
