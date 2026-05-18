@@ -1,0 +1,75 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+
+# Logs / temp
+*.log
+*.tmp
+*.bak
+*.orig
+
+# Local model artifacts (실험·실습 시작 후 발생할 항목)
+# 학습 산출물은 CephFS의 다른 경로 또는 별도 외부 store에 저장하고, repo에는 코드·문서만 둔다.
+runs/
+checkpoints/
+ckpt-*/
+wandb/
+mlruns/
+outputs/
+
+# 데이터셋 캐시 (대용량)
+data/
+datasets/
+*.parquet
+*.tfrecord
+
+# 다운로드 보조 파일
+*.partial
+*.crdownload
+
+# 비밀 정보 (commit 절대 금지)
+.env
+.env.local
+.env.*
+*.key
+*.keys
+.key
+.keys
+.token
+.tokens
+.netrc
+.git-credentials
+*.pem
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+**/credentials.json
+**/secrets.json
+**/secret*.yaml
+**/secret*.yml
+
+# 플랜 파일 (pod-local 위치) — 본 repo에는 둘 필요 없음
+# 실제 플랜 파일은 /root/.claude/plans/ 에 있고, 핵심 내용은 SESSION_HANDOFF.md / memory/ 로 영구 보관됨
