@@ -14,6 +14,9 @@
 
 - [RT-2: action-as-token 패러다임](learnings/rt2-action-as-token-paradigm.md) — 256 bin × 8 차원, VLM vocab의 token slot 빌려 action ID로 재해석
 - [RT-2: co-fine-tuning trick](learnings/rt2-co-fine-tuning-trick.md) — web data를 50~66% 비중으로 robot fine-tune에 함께 흘리면 generalization +10pp
+- [OpenVLA: DINOv2+SigLIP 비전 인코더 fusion](learnings/openvla-dual-vision-encoder-fusion.md) — 두 인코더 patch feature를 channel-wise concat. spatial + semantic 양쪽 강화. vision encoder는 freeze 금지
+- [OpenVLA: LoRA r=32 fine-tune recipe](learnings/openvla-lora-recipe.md) — VLA fine-tune에서 LoRA r=32가 full FT와 동등, 1.4% params, single A100, 10-15h
+- [OpenVLA: quantile-based discretization](learnings/openvla-quantile-discretization.md) — min-max 대신 1-99 percentile로 bin width 산정. outlier 제거, granularity ~100x
 
 ## Preferences
 
