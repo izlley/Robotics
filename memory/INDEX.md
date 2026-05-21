@@ -9,6 +9,7 @@
 - [Track 선택: 이론 심화](decisions/track-selection.md) — 학습 절차 (a) Track A를 첫 트랙으로 선택, baseline 4편 + 확장 자료 수집
 - [Baseline 논문 스코프](decisions/baseline-papers-scope.md) — 정독 8편 + 2nd tier/foundations/data/surveys 보강 정책
 - [영구 메모리 정책](decisions/persistent-memory-policy.md) — project-dir 자체에 memory/sessions 보존, GitHub 동기화
+- [확장 커리큘럼 — 옵션 3 (RFM R&D)](decisions/extended-curriculum-for-rfm-research.md) — 원 8편은 책무의 50-60%만 cover. Track A 완료 후 World Model 3편 + LAPA + Q-Transformer 추가 정독 → Track B
 
 ## Learnings
 

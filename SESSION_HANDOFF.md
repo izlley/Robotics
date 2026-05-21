@@ -2,7 +2,7 @@
 
 > **다음 세션 첫 명령**: 이 파일을 먼저 읽고, 이어서 [`memory/INDEX.md`](memory/INDEX.md) → 가장 최근 `sessions/*.md` 1~2개 순서로 읽어 컨텍스트를 복원하세요.
 >
-> **Last updated**: 2026-05-20 (session-004 종료 시점, SmolVLA 정독 완료)
+> **Last updated**: 2026-05-20 (session-005 종료 시점, 확장 커리큘럼 결정)
 
 ---
 
@@ -14,7 +14,7 @@
 
 - **상위 트랙**: 학습 절차 (a) "기본 개념·이론 학습"
 - **세부 트랙**: Track A — 이론 심화 (논문 정독)
-- **현재 페이즈**: Phase 3 진행 중 — 8편 핵심 모델 중 **3편 완료** (RT-2, OpenVLA, SmolVLA), 5편 잔여 (π0, π0.5, π★0.6, π0.7, GR00T N1). 보조 자료(Diffusion Policy, ACT, OpenX 등)는 미수집. 옵션 C(이론 먼저 끝까지) 확정.
+- **현재 페이즈**: Phase 3 진행 중 — 8편 핵심 모델 중 **3편 완료** (RT-2, OpenVLA, SmolVLA), 5편 잔여 (π0, π0.5, π★0.6, π0.7, GR00T N1). 옵션 C(이론 먼저) + **옵션 3 확장 커리큘럼 확정** ([[extended-curriculum-for-rfm-research]]): Track A 종료 후 World Model 3편(Dreamer V3, GAIA, Cosmos) + LAPA + Q-Transformer + 보조자료(Diffusion Policy, ACT, OpenX) 추가 정독.
 - **전체 플랜 파일**: `/root/.claude/plans/workspace-izlley-sllm-robotics-rustling-snowflake.md` (pod-local, 비영구 위험. 본 SESSION_HANDOFF가 복구의 source of truth)
 
 ## 3. 최근 완료된 작업
@@ -32,16 +32,30 @@
 - [x] **OpenVLA 정독 + 요약 완료** (session-003) — `papers/core-models/OpenVLA-*.pdf`, `reports/papers/OpenVLA.md` (~820줄), `memory/learnings/` 3건
 - [x] **commit caa7a4c + 3d45b43 push 완료** (RT-2/OpenVLA + summary-style)
 - [x] **SmolVLA 정독 + 요약 완료** (session-004) — `papers/core-models/SmolVLA-*.pdf`, `reports/papers/SmolVLA.md` (~870줄), `memory/learnings/` 3건 (layer skipping, async inference, flow-matching vs token paradigm)
-- [x] **Light 코드 체크인 정책 확정** — 이론 정독 중간에 5~10분 inference 체크인 가능. 본격 hands-on은 Track A 완료 후 (`memory/preferences/light-code-checkpoints.md`)
+- [x] **Light 코드 체크인 정책 확정** — 이론 정독 중간에 5~10분 inference 체크인 가능
+- [x] **확장 커리큘럼 결정** (session-005) — 사용자 RFM R&D 책무에 대해 원 8편이 50-60%만 cover. 옵션 3 채택 — Track A 완료 후 World Model 3편 + LAPA + Q-Transformer + 보조자료 추가 정독
 
-## 4. 다음 즉시 작업 (이어서 진행)
+## 4. 확장 로드맵 (옵션 3 확정)
 
-1. **⚠️ 보안: PAT rotate 필요** — 과거 PAT 노출. GitHub Settings → Developer settings → PAT → Revoke 후 재발급.
-2. **이번 session-004 변경사항 commit + push** — SmolVLA PDF, SmolVLA.md, learnings/ 3건, light-code-checkpoints.md, INDEX.md, SESSION_HANDOFF, sessions/004 로그.
-3. **사용자 학습 시간**: SmolVLA.md 읽고 token-based(OpenVLA) ↔ flow-matching(SmolVLA) 두 패러다임 차이 internalize. RT-2.md, OpenVLA.md 옆에 두고 비교 권장.
-4. **Phase 3 다음 정독: π0** — 보유 PDF 있음 (`papers/core-models/π 0 - A Vision-Language-Action Flow Model for General Robot Control.pdf`). SmolVLA의 큰 형. Flow matching action expert의 robotics 원조.
-5. 그 후: π0.5 → π★0.6 → π0.7 → GR00T N1 → synthesis 3편 → Track A 종료
-6. **Light 체크인 후보** (사용자 요청 시 끼워넣기 가능): OpenVLA inference smoke test, SmolVLA inference smoke test
+```
+Phase 3 (현재): 8편 정독 — RT-2 ✓ / OpenVLA ✓ / SmolVLA ✓ / π0 → π0.5 → π★0.6 → π0.7 → GR00T N1
+Phase 3.5 (interleave 또는 직후): 보조자료 — Diffusion Policy, ACT, Open X-Embodiment, VLA survey 1편
+Phase 4 (확장 모듈): Dreamer V3, GAIA-1/2, NVIDIA Cosmos, LAPA, Q-Transformer
+Phase 5 (synthesis): architecture-evolution, data-and-scaling, evaluation-protocols, world-model-vs-vla
+Track B: hands-on (LeRobot setup + reproduction + mixing/RL ablation)
+Track C: 회사 업무 속에서 자연스럽게
+```
+
+이론 총 약 15-20 turns + Track B 별도. 자세히: [[extended-curriculum-for-rfm-research]].
+
+## 5. 다음 즉시 작업 (이어서 진행)
+
+1. **⚠️ 보안: PAT rotate 필요** — 과거 PAT 노출. GitHub Settings → Revoke + 재발급.
+2. **이번 session-005 commit + push** — 확장 커리큘럼 메모리, INDEX 갱신, SESSION_HANDOFF 갱신, session-005 로그.
+3. **사용자 SmolVLA 학습 시간** — RT-2/OpenVLA/SmolVLA 3편의 paradigm 비교 internalize.
+4. **Phase 3 다음 정독: π0** — 보유 PDF (`papers/core-models/π 0 - A Vision-Language-Action Flow Model for General Robot Control.pdf`). SmolVLA의 큰 형. Flow matching paradigm의 robotics 원조.
+5. 그 후: π0.5 → π★0.6 → π0.7 → GR00T N1 → Phase 3.5(보조) → Phase 4(확장) → Phase 5(synthesis) → Track A 종료
+6. **Light 체크인 후보** (사용자 요청 시): OpenVLA / SmolVLA inference smoke test
 7. 향후 push 인증: origin URL에 PAT 없음. 매 push마다 `.keys` 읽기
 
 ## 5. 미해결 질문 / 결정 대기 항목
