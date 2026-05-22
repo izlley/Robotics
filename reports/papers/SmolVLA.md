@@ -273,22 +273,23 @@ def sample_action(o_t):
 - Token: discrete 256 bin, 정밀도 한계, 단일 예측만
 - Flow matching: continuous, multimodal action distribution 표현 가능 (한 상황에 여러 valid action), smoother trajectory
 
-#### 3.4.2 Interleaved CA + SA (논문의 새로움)
+#### 3.4.2 Interleaved CA + SA — 개요
 
-기존 transformer block: **Self-Attention + Cross-Attention 둘 다** 한 block에 있음. SmolVLA의 action expert는:
+기존 transformer block은 **Self-Attention + Cross-Attention을 한 block에 둘 다** 둠 (예: Flamingo, Llama with cross-attention). SmolVLA는 두 개를 분리하여 **블록마다 하나씩만** 두고 번갈아 배치:
 
 ```
-Block 1: Cross-Attention (KV from VLM features)
-Block 2: Self-Attention (causal, on action tokens)
+Block 1: Cross-Attention (Q=action, K,V=VLM features)
+Block 2: Self-Attention (causal, Q,K,V=action tokens)
 Block 3: Cross-Attention
 Block 4: Self-Attention
 ...
+(총 L_a 개 블록, 보통 8~12)
 ```
 
 **왜 분리?**
 - **Params 절감**: 한 block이 둘 다 가지면 params 2x. 분리하면 ½.
-- **Inference 빠름**: layer가 좁아져서 FLOPs ↓
-- **성능은 동등**: 정성적으로 SA가 action chunk를 부드럽게 만들고, CA가 VLM 신호를 받아옴 → 둘이 보완
+- **Inference 빠름**: 각 layer가 좁아져 FLOPs ↓
+- **성능은 동등 또는 우월**: SA는 action chunk 내부 시간적 일관성, CA는 VLM 신호 주입 → 역할 분담.
 
 **Ablation 결과** (Table 6, LIBERO Avg):
 
@@ -307,9 +308,232 @@ Block 4: Self-Attention
 | Bidirectional | 67.5 |
 | **Causal** | **74.5** |
 
-action chunk 안에서 미래 action에 attend하지 못하게 → leakage 방지 → 성능 ↑.
+action chunk 안에서 미래 action token에 attend하지 못하게 → leakage 방지 → 성능 ↑.
 
-#### 3.4.3 Action Expert 폭(width)
+#### 3.4.3 Action Expert — Per-Block 상세 구조 (VLM feature는 어떻게 흘러 들어가는가)
+
+여기가 이번 정독에서 가장 중요한 부분. 단계별로:
+
+##### (1) Input 준비 — 3종류의 데이터
+
+Action expert가 받는 3가지 입력:
+
+**(a) Action token 시퀀스** $A^\tau \in \mathbb{R}^{n \times d_{\text{action}}}$
+- $n = 50$: chunk size (50 step 한 번에 예측)
+- $d_{\text{action}} = 7$: action 차원 (Δpos 3 + Δrot 3 + gripper 1)
+- $A^\tau$는 noisy action: $A^\tau = \tau A + (1-\tau)\epsilon$
+
+각 action vector를 linear projection으로 **expert hidden dim** $d_a$ 로 매핑:
+$$
+\tilde{a}_t^\tau = W_{\text{in}} \cdot a_t^\tau + b_{\text{in}}, \quad W_{\text{in}} \in \mathbb{R}^{d_a \times d_{\text{action}}}
+$$
+여기서 $d_a = 0.75 \cdot d_{\text{vlm}}$ (SmolVLA 본문 default). $d_{\text{vlm}}$이 SmolLM-2의 hidden dim (예: SmolLM-2-135M에서 576이면 $d_a \approx 432$).
+
+→ 결과: $\tilde{A}^\tau \in \mathbb{R}^{n \times d_a}$ = [50, 432] 같은 텐서
+
+**(b) VLM features** (perception encoding) $O \in \mathbb{R}^{S \times d_{\text{vlm}}}$
+- $S$ = visual tokens + text tokens + state token. 예: 64 (top cam) + 64 (wrist cam) + 20 (text) + 1 (state) = **149 tokens**
+- $d_{\text{vlm}}$ = SmolLM-2 hidden dim (576)
+
+VLM features 출처: SmolLM-2 **layer N=8의 출력** (마지막 layer 16이 아님 — § 3.3 (a) 참조). 즉:
+$$
+O = \text{SmolLM-2}_{1:8}(\text{[visual tokens + text + state]})
+$$
+
+→ $O$는 forward pass당 **한 번만 계산되고 모든 CA block에서 KV로 재사용** (action expert의 ODE 적분 10 step 모두에서 reuse 가능 — VLM은 한 observation에 대해 한 번만 forward).
+
+각 VLM feature vector를 **expert dim으로 down-project**:
+$$
+\tilde{O} = W_{\text{vlm}} \cdot O, \quad W_{\text{vlm}} \in \mathbb{R}^{d_a \times d_{\text{vlm}}}
+$$
+→ 결과: $\tilde{O} \in \mathbb{R}^{S \times d_a}$ = [149, 432]
+
+**(c) Flow time $\tau \in [0, 1]$ 임베딩**
+- ODE 적분의 현재 위치. 매 inference step마다 다른 값.
+- Sinusoidal positional encoding처럼 처리:
+$$
+\text{emb}(\tau) = \text{MLP}_\tau \big( [\sin(\omega_1 \tau), \cos(\omega_1 \tau), ..., \sin(\omega_K \tau), \cos(\omega_K \tau)] \big) \in \mathbb{R}^{d_a}
+$$
+- 이 임베딩이 **각 block의 LayerNorm parameter (scale, shift)를 modulate** (= **AdaLN**, Esser 2024 의 Diffusion Transformer 표준 기법):
+$$
+\text{AdaLN}(x; \tau) = \gamma(\tau) \cdot \text{LN}(x) + \beta(\tau)
+$$
+$\gamma(\tau), \beta(\tau) \in \mathbb{R}^{d_a}$는 $\text{emb}(\tau)$에서 linear projection으로 생성.
+
+##### (2) 한 CA block의 내부 (Block 1, 3, 5, ...)
+
+```
+입력: tilde_A^tau ∈ [n=50, d_a]
+      tilde_O    ∈ [S=149, d_a]   (이 block에서는 K, V로만 사용)
+      tau        (AdaLN modulator)
+
+1. tilde_A^tau 에 AdaLN(τ) 적용:
+   x = AdaLN(tilde_A^tau; tau)       → [50, d_a]
+
+2. Cross-Attention:
+   Q = W_Q · x                       → [50, d_a]
+   K = W_K · tilde_O                 → [149, d_a]
+   V = W_V · tilde_O                 → [149, d_a]
+   attn = softmax(Q · K^T / sqrt(d_a)) · V
+                                     → [50, d_a]
+   (No causal mask. action token이 모든 VLM token에 attend)
+
+3. Residual + Layer:
+   x = tilde_A^tau + attn
+
+4. FeedForward (MLP):
+   x = x + MLP(AdaLN(x; tau))
+
+출력: x ∈ [50, d_a]  → 다음 SA block의 input
+```
+
+**핵심**:
+- Q는 action에서, K/V는 VLM features에서 → action token이 perception에 "질의"
+- VLM의 어느 부분(어떤 카메라 patch, 어떤 단어, state)이 현재 action에 관련 있는지 attention weight가 자동 학습
+- SA mask 없음 → 한 action token이 **모든 149개 VLM token 전부**에 attention 가능
+
+**LLM 엔지니어 analogy**: Llama with cross-attention to encoder output. 또는 T5 decoder가 encoder output에 cross-attend. 둘 다 같은 구조.
+
+##### (3) 한 SA block의 내부 (Block 2, 4, 6, ...)
+
+```
+입력: x ∈ [n=50, d_a]   (직전 CA block의 출력)
+      tau (AdaLN modulator)
+
+1. AdaLN(τ) 적용:
+   x_ln = AdaLN(x; tau)              → [50, d_a]
+
+2. Causal Self-Attention:
+   Q = W_Q · x_ln                    → [50, d_a]
+   K = W_K · x_ln                    → [50, d_a]
+   V = W_V · x_ln                    → [50, d_a]
+   attn = softmax((Q · K^T + causal_mask) / sqrt(d_a)) · V
+                                     → [50, d_a]
+   (causal_mask: 위치 t에서 위치 > t를 -infinity로 → 미래에 attend 불가)
+
+3. Residual:
+   x = x + attn
+
+4. FeedForward (MLP):
+   x = x + MLP(AdaLN(x; tau))
+
+출력: x ∈ [50, d_a]  → 다음 CA block의 input
+```
+
+**핵심**:
+- VLM features 사용 안 함. action token끼리만.
+- Causal mask로 t번째 action이 t+1, t+2... action에 attend 못 함 → autoregressive structure (chunk 내에서)
+- action chunk의 **시간적 일관성**을 보강 (CA에서 받은 perception 신호를 chunk 시간축에 따라 분산·smoothing)
+
+**왜 causal? Bidirectional 보다 왜 좋은가?**
+- Inference 시 chunk를 한 번에 sample하지만 *학습 시*에는 causal이 generative model에 더 자연스러운 inductive bias
+- 미래 action을 미리 보면 leakage → 학습 신호 손상
+
+##### (4) Block 전체 흐름 (L_a 블록 alternating)
+
+```
+INPUT:
+  action_input  = LinearProj(A^tau)        # [50, d_a]
+  vlm_features  = SmolLM-2[layer 8]        # [S=149, d_vlm]
+  vlm_features' = LinearProj(vlm_features) # [149, d_a]  (한 번만)
+  tau_emb       = MLP(sinusoidal(tau))     # [d_a]      (AdaLN 용)
+
+x = action_input
+for i in range(L_a):                  # 보통 L_a = 8 ~ 12
+    if i % 2 == 0:                    # CA block
+        x = CA_block(x, vlm_features', tau_emb)
+    else:                             # SA block
+        x = SA_block(x, tau_emb)
+
+# Output head
+v = W_out · x   # [n=50, d_a] → [50, d_action=7]
+# v는 각 시점의 velocity (action - epsilon)
+return v
+```
+
+**중요한 관찰**:
+- VLM features `tilde_O`는 모든 CA block이 공유 (계산은 한 번)
+- ODE 적분 10 step에서도 VLM features는 한 번만 계산 가능 (관측은 step 간 안 바뀌므로)
+- 매 step에서 변하는 건 `A^tau`와 `tau_emb`뿐 → action expert만 10번 forward
+- **즉 inference cost = 1 × VLM forward + 10 × action_expert forward**
+
+##### (5) Output: velocity field
+
+마지막 block 출력 `x ∈ [50, d_a]`를 linear로 action_dim=7로 project:
+$$
+v_\theta(A^\tau, o_t)_{[t]} = W_{\text{out}} \cdot x_{[t]} + b_{\text{out}}, \quad v \in \mathbb{R}^{n \times d_{\text{action}}}
+$$
+
+이 $v$가 학습 target velocity $u = \epsilon - A$ 와 MSE 비교됨 (§ 3.4.1).
+
+Inference에서는 이 $v$를 Euler 적분에 사용:
+$$
+A^{\tau + d\tau} = A^\tau + v \cdot d\tau, \quad d\tau = 0.1 \text{ (10 step)}
+$$
+
+##### (6) Tensor shape cheat sheet (전체)
+
+| Tensor | Shape | 의미 |
+|---|---|---|
+| `image` | [B, H=512, W=512, 3] × N_cam | 입력 이미지들 |
+| Visual tokens (after SigLIP + pixel shuffle) | [B, 64 × N_cam, d_vlm] | 카메라당 64 token |
+| Text tokens | [B, T, d_vlm] | text instruction |
+| State token | [B, 1, d_vlm] | joint angles 등 |
+| VLM input | [B, 64*N_cam + T + 1, d_vlm] = [B, S, d_vlm] | concat |
+| **VLM features (layer 8 output)** $O$ | **[B, S, d_vlm]** | **CA의 KV 출처** |
+| Projected VLM features $\tilde{O}$ | [B, S, d_a] | 0.75x down-project |
+| **Noisy action chunk** $A^\tau$ | **[B, n=50, 7]** | flow matching input |
+| Projected action tokens $\tilde{A}^\tau$ | [B, 50, d_a] | expert hidden |
+| τ embedding | [B, d_a] | AdaLN modulator |
+| Action expert output | [B, 50, d_a] | last block 출력 |
+| **Velocity** $v$ | **[B, 50, 7]** | 학습/추론 target |
+
+##### (7) 직관적 요약 (한 페이지로)
+
+```
+VLM (Perception)                  Action Expert (Generation)
+─────────────────                  ──────────────────────────
+[image, text, state]
+        │
+        ▼
+SmolLM-2 layer 1-8       ────►   VLM features O (KV for all CA blocks)
+(frozen, 한 번만 forward)            │ (shared across 10 ODE steps)
+                                    │
+                                    ▼
+Noisy A^tau ────────────────►   ┌──────────────┐
+                                │ CA block 1   │ ◄─── KV from O
+                                │  ↓ AdaLN(τ)  │
+                                │  ↓ FFN       │
+                                └──────────────┘
+                                       │
+                                       ▼
+                                ┌──────────────┐
+                                │ SA block 1   │ ◄─── causal mask
+                                │  ↓ AdaLN(τ)  │      (no VLM features)
+                                │  ↓ FFN       │
+                                └──────────────┘
+                                       │
+                                       ▼
+                                  ... (alternating) ...
+                                       │
+                                       ▼
+                                ┌──────────────┐
+                                │ Linear head  │
+                                └──────┬───────┘
+                                       │
+                                       ▼
+                                  Velocity v
+                                       │
+                                  ┌────┴────┐
+                       Training:  │         │  Inference:
+                       MSE vs     │         │  A ← A + v·dτ
+                       (ε - A)    │         │  10번 반복
+                                  └─────────┘
+```
+
+**한 문장 요약**: VLM(layer 8 features = "장면 인식 결과")이 K, V로 모든 CA block에 흘러들어가고, action token이 Q로 그 정보를 query하여 자기 자신을 noise → clean으로 미세 조정한다. SA block은 action chunk 내부 시간 일관성을 잡고, AdaLN(τ)이 "지금 적분 어디까지 왔는지"를 모든 block에 알려준다.
+
+#### 3.4.4 Action Expert 폭(width)
 
 VLM hidden dim $d$ 대비:
 

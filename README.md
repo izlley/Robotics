@@ -18,8 +18,9 @@ Robotics 분야의 frontier 기술, 특히 VLA(Vision-Language-Action) 모델에
 
 | 경로 | 역할 |
 |---|---|
+| [`ROADMAP.md`](ROADMAP.md) | **학습 계획 single source of truth** ★ |
+| [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md) | 현재 작업 상태 (turn-by-turn) |
 | [`CLAUDE.md`](CLAUDE.md) | Claude Code/AI 어시스턴트용 프로젝트 헌법 |
-| [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md) | 작업 재개 시 첫 진입점 (현재 트랙·다음 작업) |
 | [`papers/`](papers/) | 논문 PDF (카테고리별 분류) |
 | [`reports/`](reports/) | 학습 산출물 — seed 문서, 논문 요약, 통합 분석 |
 | [`memory/`](memory/) | 영구 메모리 — 결정·통찰·선호·외부 참조 |
@@ -29,10 +30,11 @@ Robotics 분야의 frontier 기술, 특히 VLA(Vision-Language-Action) 모델에
 
 처음 이 repo를 보는 경우:
 
-1. **트렌드 한 눈에 보기**: [`reports/VLA-study-init.md`](reports/VLA-study-init.md) — VLA 모델 13종 비교 + 7대 트렌드 (25KB)
-2. **현재 상태 확인**: [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md)
-3. **개별 모델 깊이 학습**: [`reports/papers/`](reports/papers/) — 9-섹션 표준 요약
-4. **결정 히스토리**: [`memory/decisions/`](memory/decisions/)
+1. **전체 학습 계획 한 눈에**: [`ROADMAP.md`](ROADMAP.md) ★
+2. **트렌드 한 눈에 보기**: [`reports/VLA-study-init.md`](reports/VLA-study-init.md) — VLA 모델 13종 비교 + 7대 트렌드 (25KB)
+3. **현재 상태 확인**: [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md)
+4. **개별 모델 깊이 학습**: [`reports/papers/`](reports/papers/) — 9-섹션 표준 요약
+5. **결정 히스토리**: [`memory/decisions/`](memory/decisions/)
 
 ## 학습 대상 모델 (Track A 스코프)
 

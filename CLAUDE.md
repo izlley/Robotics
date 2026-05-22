@@ -4,10 +4,11 @@
 
 새 세션 시작 시 다음 순서로 컨텍스트를 복원하세요:
 
-1. [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md) — 현재 트랙·페이즈·다음 작업 (≤200 줄, 항상 최신)
-2. [`memory/INDEX.md`](memory/INDEX.md) — 모든 영구 메모리 카탈로그
-3. `memory/decisions/`, `memory/preferences/` 우선순위 파일 (SESSION_HANDOFF §7 참조)
-4. 가장 최근 `sessions/*.md` 1~2개 — 직전 세션 로그
+1. [`SESSION_HANDOFF.md`](SESSION_HANDOFF.md) — 현재 작업 상태 (≤200 줄, 항상 최신)
+2. [`ROADMAP.md`](ROADMAP.md) — **학습 계획 single source of truth** ★
+3. [`memory/INDEX.md`](memory/INDEX.md) — 모든 영구 메모리 카탈로그
+4. `memory/decisions/`, `memory/preferences/` 우선순위 파일 (SESSION_HANDOFF §7 참조)
+5. 가장 최근 `sessions/*.md` 1~2개 — 직전 세션 로그
 
 ## 1. 프로젝트 목표
 
@@ -25,8 +26,9 @@ d. 위 학습 과정을 frontier 기술을 습득할때까지 반복한다.
 ```
 Robotics/
 ├── CLAUDE.md                # 본 파일 (프로젝트 헌법)
-├── SESSION_HANDOFF.md       # 다음 세션 첫 진입점
-├── README.md                # GitHub 노출용 (있는 경우)
+├── ROADMAP.md               # 학습 계획 single source of truth ★
+├── SESSION_HANDOFF.md       # 현재 작업 상태 (turn-by-turn)
+├── README.md                # GitHub 노출용
 ├── papers/                  # 논문 PDF (카테고리별 sub-dir)
 │   ├── core-models/         # 핵심 8편
 │   ├── related-models/      # 2nd tier
