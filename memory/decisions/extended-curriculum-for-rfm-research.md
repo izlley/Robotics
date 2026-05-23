@@ -115,6 +115,13 @@ Phase 5 — Synthesis (이론 종합):
   → reports/synthesis/evaluation-protocols.md
   → reports/synthesis/world-model-vs-vla.md (옵션 3 추가)
 
+Phase 5.5 — Pre-Track-B Infrastructure (2026-05-23 추가):
+  → LeRobot paper (Cadene 2026, arXiv:2602.22818) ★
+  → (옵션) openpi tech report, NVIDIA Isaac docs
+  - System paper, 300-400줄 정도. 9-섹션 풀 템플릿 사용 안 함
+  - 이유: Track B의 main stack 자체에 대한 이해 선행 → B1 환경 setup 비용 ↓
+  - SmolVLA 저자팀의 라이브러리이므로 SmolVLA 정독과 연결성 높음
+
 Track B — Hands-on:
   → 환경 setup (LeRobot)
   → SmolVLA / OpenVLA inference + LoRA reproduction
@@ -132,7 +139,8 @@ Track C — New idea:
 - Phase 3.5 보조: 4편 × 1 turn = ~4 turns (또는 본 정독에 함께)
 - Phase 4 확장: 5편 × 1 turn = ~5 turns
 - Phase 5 Synthesis: 2-3 turns
-- **이론 총 ~15-20 turns**
+- **Phase 5.5 Pre-Track-B (LeRobot paper + 옵션): 1-2 turns**
+- **이론 총 ~17-19 turns**
 - Track B (hands-on): 별도, ~10-20 sessions
 - 전체 약 2-3개월 (사용자 페이스)
 

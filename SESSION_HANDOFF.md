@@ -2,7 +2,7 @@
 
 > **다음 세션 첫 명령**: 이 파일을 먼저 읽고, 학습 계획은 [`ROADMAP.md`](ROADMAP.md) 참조. 이어서 [`memory/INDEX.md`](memory/INDEX.md) → 가장 최근 `sessions/*.md` 1~2개 순서로 읽어 컨텍스트 복원하세요.
 >
-> **Last updated**: 2026-05-22 (session-006 종료 시점)
+> **Last updated**: 2026-05-23 (session-008, Phase 5.5 신설)
 >
 > **이 파일의 역할**: "지금 어디" 만 짧게. 자세한 계획은 [ROADMAP.md](ROADMAP.md), 결정 이력은 [memory/decisions/](memory/decisions/).
 
@@ -21,6 +21,8 @@
 
 ## 3. 최근 완료 (시간 역순)
 
+- session-008 (2026-05-23): **Phase 5.5 신설** — LeRobot paper(arXiv:2602.22818)를 Pre-Track-B Infrastructure Reading으로 추가. ROADMAP §3, §4, §10 갱신.
+- session-007 (2026-05-22): SmolVLA.md 보강 (Tiling/Pixel shuffle/Loss prediction vs target 명확화)
 - session-006 (2026-05-22): **`ROADMAP.md` 신설** (학습 계획 통합) + SmolVLA.md Action Expert 섹션 상세 보강 (per-block 구조, VLM feature flow, tensor shapes, AdaLN τ conditioning)
 - session-005 (2026-05-20): 갭 분석 → **옵션 3 (확장 커리큘럼) 채택** ([extended-curriculum-for-rfm-research.md](memory/decisions/extended-curriculum-for-rfm-research.md))
 - session-004 (2026-05-20): SmolVLA 정독 + light-code-checkpoints 정책
