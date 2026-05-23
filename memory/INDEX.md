@@ -21,6 +21,9 @@
 - [SmolVLA: VLM layer skipping](learnings/smolvla-vlm-layer-skipping.md) — VLM의 앞 L/2층만 perception에 사용. 마지막 N층은 generation 특화라 불필요. "큰 VLM 절반 ≈ 작은 VLM 통째"
 - [SmolVLA: Async inference (model-agnostic)](learnings/smolvla-async-inference.md) — Action 실행/예측을 별 process로. idle 0, latency 30%↓, 처리량 2x. 모든 chunk-출력 모델에 적용 가능
 - [SmolVLA vs OpenVLA: 두 패러다임 비교 (token vs flow-matching)](learnings/smolvla-flow-matching-vs-token.md) — VLA의 본질적 두 분기점. 정밀·multimodal action엔 flow-matching, 단순·CoT 결합엔 token-based
+- [π0: MoE in single transformer](learnings/pi0-moe-single-transformer.md) — 단일 transformer 안에 VLM expert + Action expert 두 weight set. self-attention layer에서만 상호작용. token type별 deterministic routing
+- [π0: Block-wise causal attention](learnings/pi0-blockwise-causal-attention.md) — 3 blocks (img+lang/state/action). 블록 내 bidirectional, 블록 사이 causal. State KV cache로 inference ~5x 가속
+- [π0: Pre-training + Post-training 명시적 분리](learnings/pi0-pre-post-training.md) — LLM 패턴의 robotics 최초 적용. Pre는 mixed-quality recovery, Post는 high-quality fluency. 둘 결합이 결정적
 
 ## Preferences
 
