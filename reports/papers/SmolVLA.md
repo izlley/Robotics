@@ -211,14 +211,98 @@ $$
 - 즉 **큰 VLM의 절반 = 작은 VLM 통째**보다 약간 좋음
 - "큰 모델을 만들고 잘라쓰는 게 작은 모델 통째 쓰는 것보다 같거나 좋다" — pruning research의 robotics 응용
 
-**(b) Visual tokens 축소**
+**(b) Visual tokens 축소 — Tiling 제거 + Pixel shuffle**
 
-SmolVLM-2 default는 **image tiling** (multiple crops + global). SmolVLA는:
-- Tiling 제거 (단일 global image만)
-- **Pixel shuffle** (Lin 2023b)로 patch token을 ½ × ½ = ¼ 압축
-- 결과: **frame당 64 visual tokens** (보통 VLM은 ~256+)
+이 부분은 LLM 엔지니어에게는 낯설 수 있어 자세히.
 
-이는 추론 속도에 결정적 (transformer cost는 sequence length 제곱에 비례).
+##### Tiling이란 (배경)
+
+VLM은 고해상도 이미지를 다음 문제 때문에 그대로 처리할 수 없다:
+- Vision encoder(SigLIP, ViT)는 **고정 해상도**(보통 224×224 또는 384×384)에서 학습됨
+- 1024×1024 같은 고해상도를 그냥 넣으면 distribution 벗어나 성능 ↓
+- 작게 resize하면 미세 디테일(작은 글자, 작은 객체) 손실
+
+**Tiling 해결책**: 원본을 격자로 잘라 각 타일을 독립적으로 encoder에 통과:
+
+```
+원본 1024×1024:
+┌────┬────┐
+│ T1 │ T2 │     ← 4개 타일 (각 512×512)
+├────┼────┤
+│ T3 │ T4 │
+└────┴────┘
+   +
+Global 이미지 (resize한 전체 384×384)
+
+각각 SigLIP → 토큰화:
+  T1     → ~256 tokens
+  T2     → ~256 tokens
+  T3     → ~256 tokens
+  T4     → ~256 tokens
+  Global → ~256 tokens
+─────────────────────
+  Total  → ~1280 tokens per image
+```
+
+**대표 사용**: LLaVA-NeXT, InternVL, **SmolVLM-2 (기본 설정)**
+
+- 장점: 고해상도 detail 보존 (text 읽기, 작은 객체 인식)
+- 단점: 토큰 수 **5배 폭발** → transformer cost는 sequence length 제곱이므로 **추론 비용 ~25배**
+
+##### SmolVLA의 결정: Tiling 제거
+
+| 선택 | Visual token / frame | 이유 |
+|---|---|---|
+| SmolVLM-2 default (tiling 포함) | ~1280 | 일반 VLM은 OCR·fine detail 필요 |
+| **SmolVLA (tiling 제거)** | ~256 (still big) | global 이미지만 사용 (512×512) |
+
+**왜 robotics에서는 tiling 제거가 OK?**
+- Robot 카메라는 **fixed view, 가까운 distance** → 객체가 이미 충분히 큼
+- 필요한 인식: 객체 종류·위치·자세 — text 읽기, 미세 디테일은 ✗
+- **Multi-view 카메라**(top + wrist + side)로 다각도 정보 보강 — tiling으로 1 카메라를 깊이 파는 것보다 더 효율적
+- 384×384 또는 512×512 global 이미지 한 장이면 manipulation에 충분
+
+##### 추가 압축: Pixel Shuffle
+
+Tiling 제거 후에도 frame당 256 tokens는 여전히 큼. SmolVLA는 한 번 더 압축.
+
+**Pixel shuffle** (원래 super-resolution 기법, Shi 2016):
+
+```
+SigLIP 출력: [N patches, d_feat]              (예: [256, 768])
+              ↓ 공간상 2×2 인접 patch 4개를 한 묶음으로 reshape
+              ↓ [N/4, 4·d_feat]                (예: [64, 3072])
+              ↓ Linear projection (4·d_feat → d_feat)
+최종:        [N/4, d_feat]                    (예: [64, 768])
+```
+
+핵심:
+- 정보 손실 거의 없음 (linear projection이 4 patch info를 1 token에 압축)
+- Token 수 **¼로**
+- 단지 patch grouping + linear → 추가 학습 비용 미미
+
+##### 결과 — 누적 효과
+
+| 단계 | Tokens per frame | 누적 |
+|---|---|---|
+| SmolVLM-2 raw (tiling 포함) | ~1280 | baseline |
+| Tiling 제거 | ~256 | **-80%** |
+| Pixel shuffle 적용 | **64** | **-95%** |
+
+3 cameras × 64 = 192 visual tokens + 텍스트 (~20) + state (1) ≈ **213 total tokens** → 매우 가벼움.
+
+##### LLM 도구와의 analogy
+
+| LLM 영역 | 유사 기법 |
+|---|---|
+| Context length 압축 | LLMLingua, prompt compression (정보 손실 trade) |
+| Speculative decoding | (다른 영역) |
+| Multi-query attention | KV cache 축소 |
+| **Token pruning / merging** | **가장 직접적 유사: 시각 영역의 token 압축** |
+
+Pixel shuffle은 visual ToMe (Token Merging, Bolya 2023)와 비슷한 정신 — 인접 token을 합쳐 sequence 줄이기.
+
+이 추론 속도 개선이 **6 Hz on consumer 4090**을 가능하게 한 핵심 (transformer cost가 sequence length 제곱이므로 64 vs 1280은 ~400배 차이).
 
 **(c) State token**
 
@@ -666,24 +750,104 @@ Be concise. Start directly with an action verb like "Pick", "Place", "Open", etc
 
 ### 5.1 Loss
 
-위의 flow matching loss (3.4.1):
+#### 가장 헷갈리는 부분 — Flow matching에서 "무엇이 prediction이고 무엇이 target인가"
+
+Direct regression(예: ACT)에서는 "model이 action 예측 → GT action과 MSE"가 자연스럽지만, **flow matching은 다른 parameterization**:
+
+| 측면 | Direct regression (ACT 등) | Flow matching (SmolVLA, π0) |
+|---|---|---|
+| Model이 출력하는 것 | $\hat{A}_t$ (action chunk 직접) | **$v_\theta$ (velocity vector)** |
+| Loss 비교 대상 (target) | $A_t$ (GT action) | $\epsilon - A_t$ (target velocity) |
+| Loss 수식 | $\|\hat{A}_t - A_t\|^2$ | $\|v_\theta - (\epsilon - A_t)\|^2$ |
+| Inference 시 action 어디서 나오나 | model 출력 그대로 | ODE 적분 10 step 후 |
+
+→ **둘 다 "prediction - target" MSE 구조지만, prediction이 action이 아니라 velocity (속도 벡터)**.
+
+#### Loss 수식 (해부)
+
 $$
-\mathcal{L}_\tau(\theta) = \mathbb{E}_{(o_t, A_t)} \mathbb{E}_{\tau \sim \text{Beta}, \epsilon \sim \mathcal{N}(0, I)} \left\| v_\theta(\tau A_t + (1-\tau)\epsilon, o_t) - (\epsilon - A_t) \right\|^2
+\mathcal{L}_\tau(\theta) = \mathbb{E}_{(o_t, A_t) \sim D_{\text{robot}}} \mathbb{E}_{\tau \sim \text{Beta}, \epsilon \sim \mathcal{N}(0, I)} \Big[ \big\| \underbrace{v_\theta(\tau A_t + (1-\tau)\epsilon,\; o_t)}_{\text{🎯 모델 prediction (velocity)}} \;-\; \underbrace{(\epsilon - A_t)}_{\text{✅ target velocity}} \big\|^2 \Big]
 $$
 
-**기호**:
-- $\theta$: **action expert만** ($v_\theta$). VLM은 frozen.
-- $o_t$: VLM의 layer 8 features (perception)
-- $A_t$: ground-truth action chunk (size n=50)
-- $\tau$: flow time, **Beta distribution sampling** (π0과 동일. 보통 Beta(1.5, 1)로 $\tau$가 중간값에 집중)
-- $\epsilon$: standard Gaussian noise
+**모든 기호 명확화**:
+
+| 기호 | 정체 | 역할 |
+|---|---|---|
+| $\theta$ | 학습 대상 parameter | **action expert만** ($v_\theta$). VLM은 frozen |
+| $o_t$ | VLM features (layer 8 출력) | observation encoding (perception) |
+| $A_t$ | GT action chunk, shape [n=50, 7] | **target action**. ⚠ Loss와 직접 비교 대상이 **아님** — target velocity 계산에만 사용 |
+| $\epsilon$ | $\mathcal{N}(0, I)$ noise, shape [n=50, 7] | random sample, 학습 step마다 새로 |
+| $\tau \in [0, 1]$ | flow time, Beta(1.5, 1) sampling | "noise → data 직선 path의 어느 위치?" π0과 동일 |
+| $A_t^\tau = \tau A_t + (1-\tau)\epsilon$ | interpolated noisy point | **모델 input** (action expert에 들어가는 noisy action) |
+| $v_\theta(A_t^\tau, o_t)$ | shape [n=50, 7] | **🎯 모델 prediction** = velocity vector field |
+| $\epsilon - A_t$ | shape [n=50, 7] | **✅ target velocity** = 직선 path의 미분으로 자동 정의됨 |
+| $D_{\text{robot}}$ | OpenX 등 episode dataset | episode 분포 (web data **포함 안 됨**) |
+
+#### Target velocity가 어떻게 정해지나
+
+직선 path 정의: $A_t^\tau = \tau A_t + (1-\tau)\epsilon$.
+미분: $\dfrac{d A_t^\tau}{d\tau} = A_t - \epsilon$ → "data 쪽으로 가는 속도".
+부호 뒤집은 $\epsilon - A_t$가 논문 표기 (적분 방향 convention 차이일 뿐, MSE에서 제곱이라 무관).
+
+→ **target velocity는 사람이 만든 supervision label이 아니라, 직선 path의 미분에서 자동으로 derive되는 수학적 정의**. GT action $A_t$가 있으면 target velocity는 공식 한 줄로 즉시 계산 가능 → 학습 가능.
+
+#### 학습 step 한 번 의사코드
+
+```python
+# 한 training step
+A_t, o_t = sample_from_dataset()              # GT action + observation
+tau = sample_beta(1.5, 1.0)                   # flow time
+epsilon = randn_like(A_t)                     # noise
+
+A_tau = tau * A_t + (1 - tau) * epsilon       # interpolated noisy point (input)
+target_velocity = epsilon - A_t               # 공식으로 계산 (target)
+
+vlm_features = VLM(o_t)                       # forward (frozen)
+pred_velocity = action_expert(A_tau, vlm_features, tau)  # 🎯 prediction
+
+loss = mse(pred_velocity, target_velocity)    # MSE in velocity space
+loss.backward()
+optimizer.step()                              # update action_expert only
+```
+
+#### 직관 — 왜 velocity인가?
+
+```
+Noise space                              Data space
+ε ─────────── A_t^τ ──────────── A_t
+  τ=0           τ=어딘가          τ=1
+
+학습 시:
+  1. 우리는 양 끝(ε, A_t)을 알고 있음
+  2. 중간 점 A_t^τ에서 "data 쪽 향한 속도"가 무엇이어야 하는지를 model이 추측
+  3. 정답: ε - A_t (또는 A_t - ε, 부호 무관)
+
+Inference 시:
+  1. A_t를 모름 (지금 만들 차례)
+  2. ε에서 시작해서 model의 velocity 예측을 따라 step-by-step 이동
+  3. 10 step 후 도착한 곳이 추론한 action
+```
+
+#### 왜 이 parameterization을 쓰는가 (vs direct regression)
+
+| 장점 | 메커니즘 |
+|---|---|
+| Multimodal action 표현 | 같은 $o_t$, 다른 $\epsilon$ → 다른 valid action 가능 (한 상황 여러 정답 자연 모델링) |
+| Smooth trajectory | ODE 적분이 chunk 내 자연스러운 smoothness 제공 |
+| 학습 안정성 | $\tau$ 분포가 implicit regularization (noise schedule 효과) |
+| Continuous action | 256 bin discrete 한계 없음 (token-based VLA 대비) |
+| Few-step inference | Flow matching은 10 step으로 OK (full diffusion은 50~1000) |
+
+단점: inference 시 forward 10번 (regression은 1번). 하지만 SmolVLA의 inference cost는 VLM(perception)이 dominant → action expert 10번 추가 비용 작음.
+
+#### VLM Frozen — 학습 효율 결정
 
 **중요**: VLM은 **frozen**. 학습되는 건 action expert뿐. OpenVLA(vision encoder까지 unfreeze)와 정반대 결정.
 
 **왜 VLM frozen?**
 - SmolVLA의 핵심 목표: 효율. Action expert만 학습 = 학습 비용 ↓
-- VLM features가 robot 제어에 충분히 강력하다는 가정 (실제로 ablation에서 확인)
-- π0과 같은 전략
+- VLM features가 robot 제어에 충분히 강력하다는 가정 (실제 ablation에서 확인)
+- π0과 같은 전략 (대조: OpenVLA는 unfreeze가 결정적이라 발견)
 
 ### 5.2 Optimization
 
