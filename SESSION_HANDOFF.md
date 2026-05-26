@@ -2,7 +2,7 @@
 
 > **다음 세션 첫 명령**: 이 파일을 먼저 읽고, 학습 계획은 [`ROADMAP.md`](ROADMAP.md) 참조. 이어서 [`memory/INDEX.md`](memory/INDEX.md) → 가장 최근 `sessions/*.md` 1~2개 순서로 읽어 컨텍스트 복원하세요.
 >
-> **Last updated**: 2026-05-23 (session-009, π0 정독 완료 — 4/8)
+> **Last updated**: 2026-05-26 (session-010, π0.5 정독 완료 — 5/8)
 >
 > **이 파일의 역할**: "지금 어디" 만 짧게. 자세한 계획은 [ROADMAP.md](ROADMAP.md), 결정 이력은 [memory/decisions/](memory/decisions/).
 
@@ -15,12 +15,13 @@
 ## 2. 현재 위치 (Quick Status)
 
 - **Phase**: Track A — Phase 3 (핵심 8편 정독)
-- **진도**: **4/8 완료** (RT-2, OpenVLA, SmolVLA, π0)
-- **다음 turn**: **π0.5 정독** (보유 PDF, 다운로드 불필요)
+- **진도**: **5/8 완료** (RT-2, OpenVLA, SmolVLA, π0, π0.5)
+- **다음 turn**: **π★0.6 정독** (보유 PDF, 다운로드 불필요)
 - **로드맵**: [`ROADMAP.md`](ROADMAP.md) (옵션 3, 균형 확장 확정)
 
 ## 3. 최근 완료 (시간 역순)
 
+- session-010 (2026-05-26): **π0.5 정독** (PI 2025). reports/papers/pi0_5.md (~900줄) + learnings 3건 (co-training quantity vs diversity, hybrid FAST+Flow, hierarchical inference). Open-world generalization 달성 — unseen real homes에서 10-15분 multi-stage cleaning 성공.
 - session-009 (2026-05-23): **π0 정독** (Black 2024, PI). reports/papers/pi0.md (~900줄) + learnings 3건 (MoE single transformer, block-wise causal attention, pre/post training 분리). Flow matching paradigm의 robotics anchor.
 - session-008 (2026-05-23): **Phase 5.5 신설** — LeRobot paper(arXiv:2602.22818)를 Pre-Track-B Infrastructure Reading으로 추가. ROADMAP §3, §4, §10 갱신.
 - session-007 (2026-05-22): SmolVLA.md 보강 (Tiling/Pixel shuffle/Loss prediction vs target 명확화)

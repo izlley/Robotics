@@ -24,6 +24,9 @@
 - [π0: MoE in single transformer](learnings/pi0-moe-single-transformer.md) — 단일 transformer 안에 VLM expert + Action expert 두 weight set. self-attention layer에서만 상호작용. token type별 deterministic routing
 - [π0: Block-wise causal attention](learnings/pi0-blockwise-causal-attention.md) — 3 blocks (img+lang/state/action). 블록 내 bidirectional, 블록 사이 causal. State KV cache로 inference ~5x 가속
 - [π0: Pre-training + Post-training 명시적 분리](learnings/pi0-pre-post-training.md) — LLM 패턴의 robotics 최초 적용. Pre는 mixed-quality recovery, Post는 high-quality fluency. 둘 결합이 결정적
+- [π0.5: Co-training quantity vs diversity](learnings/pi05-co-training-quantity-vs-diversity.md) — MM target data 2.4%만으로도 5+ source co-training 시 unseen home 일반화. Data diversity가 quantity 능가
+- [π0.5: Hybrid FAST + Flow matching](learnings/pi05-hybrid-fast-flow.md) — Pre-training FAST discrete + post-training flow matching expert 추가. FAST가 language ability 보존에 결정적
+- [π0.5: Hierarchical inference](learnings/pi05-hierarchical-inference.md) — 같은 모델이 subtask 예측 후 action 생성. Chain-of-Thought의 robotics 응용. In-domain HL이 GPT-4 zero-shot보다 우월
 
 ## Preferences
 

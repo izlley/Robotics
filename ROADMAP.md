@@ -1,7 +1,7 @@
 # ROADMAP — VLA / RFM 학습 계획
 
 > **Single source of truth.** 학습 계획에 대한 모든 정보는 이 파일에 통합됩니다. 매 session 종료 시 갱신.
-> **Last updated**: 2026-05-23 (session-009, π0 정독 완료 — 4/8)
+> **Last updated**: 2026-05-26 (session-010, π0.5 정독 완료 — 5/8)
 >
 > 관련 문서:
 > - [`CLAUDE.md`](CLAUDE.md) — 프로젝트 헌법 (변경 거의 없음)
@@ -28,8 +28,8 @@
 
 ## 2. Quick Status
 
-- **진도**: Track A 핵심 8편 중 **4편 완료** (RT-2 ✅, OpenVLA ✅, SmolVLA ✅, π0 ✅), **4편 잔여**
-- **다음 turn**: π0.5 정독 (보유 PDF, 다운로드 불필요)
+- **진도**: Track A 핵심 8편 중 **5편 완료** (RT-2 ✅, OpenVLA ✅, SmolVLA ✅, π0 ✅, π0.5 ✅), **3편 잔여**
+- **다음 turn**: π★0.6 정독 (보유 PDF, 다운로드 불필요)
 - **예상 종료**: 이론 ~15-20 turns (약 2-3개월 페이스), Hands-on 별도 ~10-20 sessions
 - **확장 옵션**: [옵션 3 (균형 확장)](memory/decisions/extended-curriculum-for-rfm-research.md) 확정
 
@@ -59,8 +59,8 @@ Track C: New idea & 회사 RFM 통합 (지속)
 | 2 | **OpenVLA** | Kim 2024, Stanford/UCB | Token-based | ✅ session-003 | [OpenVLA.md](reports/papers/OpenVLA.md) (~820줄) |
 | 3 | **SmolVLA** | HF 2025 | **Flow matching** | ✅ session-004 | [SmolVLA.md](reports/papers/SmolVLA.md) (~870줄) |
 | 4 | **π0** | Black 2024, PI | Flow matching + MoE | ✅ session-009 | [pi0.md](reports/papers/pi0.md) (~900줄) |
-| 5 | **π0.5** | PI 2025 | Flow + open-world | 📍 **다음** | (보유 PDF) |
-| 6 | **π★0.6** | PI 2026 | Flow + RL (RECAP) | ⏳ | (보유 PDF) |
+| 5 | **π0.5** | PI 2025 | Flow + open-world + hybrid FAST | ✅ session-010 | [pi0_5.md](reports/papers/pi0_5.md) (~900줄) |
+| 6 | **π★0.6** | PI 2026 | Flow + RL (RECAP) | 📍 **다음** | (보유 PDF) |
 | 7 | **π0.7** | PI 2026 | Flow + steerable | ⏳ | (보유 PDF) |
 | 8 | **GR00T N1** | NVIDIA 2025 | Diffusion + humanoid | ⏳ | 다운로드 필요 |
 
@@ -258,3 +258,5 @@ R&D 책무 6 axis에 대한 cover 비율:
 | 2026-05-22 | session-007 | SmolVLA.md 보강 (Tiling/Pixel shuffle/Loss prediction vs target 명확화) |
 | 2026-05-23 | session-008 | **Phase 5.5 신설 — LeRobot paper (arXiv:2602.22818) 추가** (Pre-Track-B Infrastructure Reading) |
 | 2026-05-23 | session-009 | **π0 정독** (~900줄 요약, MoE single transformer + block-wise causal + flow matching τ shifted Beta + pre/post training 분리) — 4/8 완료 |
+| 2026-05-23 | (interim) | Diagram alignment preference 추가 (CJK/Unicode 혼용 시 정렬 깨짐 방지) |
+| 2026-05-26 | session-010 | **π0.5 정독** (~900줄 요약, 5+ source co-training + hybrid FAST/Flow + hierarchical inference + adaptive RMSNorm + 진짜 가정집 검증) — 5/8 완료 |
