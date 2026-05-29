@@ -149,6 +149,9 @@ OpenVLA는 **Prismatic-7B VLM** (Karamcheti et al. 2024)을 시작점으로 함.
 
 OpenVLA의 가장 큰 아키텍처적 새로움. **왜 두 비전 인코더를 동시에 쓰는가?**
 
+![OpenVLA Dual Vision Encoder Fusion](figures/openvla_dual_vision_fusion.svg)
+*DINOv2 (spatial) + SigLIP (semantic) feature를 channel-wise concat 후 MLP projector로 Llama-2 embed space에 매핑.*
+
 | 비전 인코더 | 강점 | 약점 |
 |---|---|---|
 | **CLIP / SigLIP** | Web text-image contrastive 학습 → **semantic** 강함 ("이게 사과다") | Spatial precision 약함 (정확한 위치) |
@@ -190,6 +193,9 @@ $$
 - **OpenVLA: $[q_{1\%}, q_{99\%}]$ 사용 (1st-99th quantile)** ← 더 robust
 
 **왜 quantile?** Robot trajectory data에는 outlier가 많다 (예: gripper 명령이 갑자기 100배 큰 값). Min-max를 쓰면 bin width가 이 outlier 때문에 부풀려져서 정상 동작의 정밀도가 떨어진다. 1~99 percentile을 쓰면 outlier가 제거되어 **effective granularity가 약 100배 향상**.
+
+![OpenVLA Quantile-based Discretization](figures/openvla_quantile_discretization.svg)
+*Min-max는 outlier가 range를 부풀려 정상 분포가 좁은 bin 범위에 압축됨. Quantile-based는 outlier 1%를 제거하여 bin width가 ~100배 정밀.*
 
 #### Step 2. Bin index → Llama token ID 매핑
 
@@ -518,6 +524,9 @@ OpenVLA를 OpenX-pretrained 상태에서 새 robot/task에 **full fine-tune** (1
 | Sandwich (vision + emb + last) | 62.1% | 914 (12.7%) | 64 GB |
 | **LoRA rank=32** | **68.2%** | **97.6 (1.4%)** | **60 GB** ★ |
 | LoRA rank=64 | 68.2% | 195.2 (2.7%) | 60 GB |
+
+![OpenVLA LoRA Comparison](figures/openvla_lora_comparison.svg)
+*성능 vs 비용. LoRA r=32가 Full FT와 동등 성능을 1.4% params + 60GB VRAM (single A100)로 달성.*
 
 **핵심 발견**:
 - **LoRA r=32가 Full FT와 동등 성능**, 단 **1.4% params만 학습**

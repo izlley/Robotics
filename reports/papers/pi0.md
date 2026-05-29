@@ -160,6 +160,9 @@
 
 ### 3.3 핵심 모듈 1 — Mixture-of-Experts in Single Transformer (가장 새로움)
 
+![π0 MoE Architecture](figures/pi0_moe_architecture.svg)
+*단일 transformer 안에 두 weight set. VLM expert (이미지+언어), Action expert (state+action). 두 expert는 self-attention layer에서만 상호작용.*
+
 #### 기존 방식 vs π0 방식
 
 | 방식 | 구조 | 예 |
@@ -223,6 +226,9 @@ def transformer_layer(tokens):
 - π0: routing은 token type으로 **fixed** + dense activation (모든 token이 자기 expert 사용)
 
 ### 3.4 핵심 모듈 2 — Block-wise Causal Attention Mask
+
+![π0 Attention Mask](figures/pi0_attention_mask.svg)
+*3 blocks (image+lang / state / action). 블록 내 bidirectional, 블록 사이 causal forward만. State block 분리 덕분에 KV cache 가능 → ODE 10 step에서 reuse → inference ~5x 가속.*
 
 3 blocks:
 
@@ -295,6 +301,12 @@ $$
 $$
 p(\tau) = \text{Beta}\left(\frac{s - \tau}{s}; 1.5, 1\right), \quad s = 0.999
 $$
+
+![π0 τ Distribution](figures/pi0_tau_distribution.svg)
+*Shifted Beta 분포. τ=0에서 peak (1.5), τ=0.999에서 절단. τ ∈ [0, 0.25] 구간이 40%로 가장 자주 샘플링 — "학습 어려운 영역(high noise)에 집중".*
+
+![π0 Linear Path](figures/pi0_linear_path.svg)
+*노이즈 ε에서 action A_t로 가는 직선 path. 모든 지점에서 velocity (초록) 방향과 크기 동일 = A_t − ε. 모델이 학습하는 target velocity는 이 일정 벡터.*
 
 **왜 image gen과 정반대인가?** (저자 추론, 중요한 통찰):
 - Image generation: text label이 image distribution을 **약하게** 제약 → 학습 어려운 부분은 "중간 τ" (low τ는 평균 image, high τ는 identity)

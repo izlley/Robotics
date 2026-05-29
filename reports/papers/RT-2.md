@@ -7,6 +7,9 @@
 
 ---
 
+![RT-2 Architecture Flow](figures/rt2_architecture_flow.svg)
+*전체 흐름: VLM이 image+text를 받아 action token sequence를 그대로 출력. 새 layer 없음.*
+
 ## 한 줄 요약
 
 기존 web-scale VLM(PaLI-X, PaLM-E)을 robot trajectory 데이터에 **co-fine-tune** 하되, **action을 language token처럼 표현**해서 모델 구조 변경 없이 그대로 학습 — 결과적으로 web 지식이 transfer되어 unseen object·symbol·reasoning에서 baseline(RT-1) 대비 2~3배 성능, 다만 새 motor skill은 못 얻음.
@@ -126,6 +129,9 @@ RT-2는 정반대 가설을 검증:
 ### 3.3 핵심 모듈: Action Tokenization
 
 이게 RT-2의 진짜 핵심이다. 메커니즘을 단계별로:
+
+![RT-2 Action Tokenization](figures/rt2_action_tokenization.svg)
+*Continuous action → 256 bin index → VLM tokenizer slot. PaLI-X는 정수 token slot 그대로, PaLM-E는 symbol tuning으로 least-used token overwrite.*
 
 **Step 1. Action vector 정의**
 
@@ -408,6 +414,9 @@ $$
 | **from scratch** (VLM pretraining 무시) | **9%** | (skip — 5B에서도 처참) | — |
 | **fine-tuning only** (robot data만) | 42% | 52% | +10pp |
 | **co-fine-tuning** (web + robot mix) | 44% | **63%** | +19pp |
+
+![RT-2 Co-Fine-tuning Ablation](figures/rt2_co_finetuning_ablation.svg)
+*세 가지 학습 방식 비교: (1) VLM pre-training의 가치(+33pp), (2) co-FT > FT(+11pp at 55B), (3) 모델 클수록 차이 증폭.*
 
 해석:
 1. **VLM pretraining이 결정적**: scratch 9% → fine-tune 42% (5B 기준). **+33pp** 개선의 거의 전부는 web pretraining 덕분

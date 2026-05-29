@@ -153,11 +153,40 @@ ASCII diagram here
 
 | 상황 | 권장 형태 |
 |---|---|
-| 모듈 간 데이터 흐름 (3-5 노드) | **Indent + arrow** 또는 단일 row sequential |
-| 비교 (값/parameter 표) | **Markdown table** |
-| 복잡한 attention mask, block 구조 | **단순 ASCII (모두 1-column 폭)** + label은 박스 밖 |
-| 수식 포함 | LaTeX `$...$` 사용, ASCII art에 끼우지 않음 |
-| 사용자에게 의미 전달이 핵심 (정확한 정렬보다) | **indent tree** 형태 (alignment 부담 최소) |
+| **paper의 핵심 mechanism / architecture diagram** | **matplotlib + SVG** ★ (`reports/papers/figures/`) |
+| **수치 비교 (parameter sweep, ablation bar)** | **matplotlib bar chart → SVG** |
+| **distribution / curve 시각화** | **matplotlib + SVG** |
+| 모듈 간 데이터 흐름 (3-5 노드, 단순) | Indent + arrow 또는 sequential text |
+| 비교 (값/parameter 표) | Markdown table |
+| 수식 포함 | LaTeX `$...$` 사용 |
+
+# 2026-05-29 업데이트: SVG 직접 생성 정책
+
+ASCII art의 정렬 한계를 극복하기 위해 **matplotlib + SVG 직접 생성**을 default로 채택:
+
+- 위치: `reports/papers/figures/`
+- 스크립트: `reports/papers/figures/scripts/gen_<paper>_figures.py`
+- 공통 style: `reports/papers/figures/scripts/_style.py` (COLORS palette + NanumGothic 폰트)
+- 형식: SVG (vector, GitHub native render) + PNG (raster fallback, 150 dpi)
+
+**Markdown 임베딩**:
+```markdown
+![<concise alt>](figures/<paper>_<concept>.svg)
+*<italic caption: 무엇을 보여주는지>*
+```
+
+자세한 규칙: [`reports/papers/figures/README.md`](../../reports/papers/figures/README.md)
+
+**SVG 생성 도구**:
+- 분포 / curve → `matplotlib.pyplot.plot/fill_between`
+- Architecture block → `matplotlib.patches.FancyBboxPatch` + arrows
+- Bar chart → `matplotlib.pyplot.bar`
+- 한글 폰트 → NanumGothic (apt-get install fonts-nanum)
+- minus 기호 → ASCII `-` 또는 Unicode `−` (font 호환 확인 필요)
+
+**제약**:
+- NanumGothic은 ✓ (U+2713), ✗ (U+2717) glyph 미보유. 대체로 "OK", "NO" 텍스트 사용.
+- "−" (U+2212) minus도 일부 글꼴에서 깨짐. `-` (ASCII) 또는 LaTeX `$-$` 사용 권장.
 
 # 관련 메모리
 

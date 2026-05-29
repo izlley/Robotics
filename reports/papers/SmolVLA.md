@@ -190,6 +190,9 @@ $$
 \text{features} = \text{SmolLM-2}_{1:N}(input), \quad N = L/2 = 8
 $$
 
+![SmolVLA Layer Skipping](figures/smolvla_layer_skipping.svg)
+*Layer 1~8만 사용 (보라색), 9~16은 버림 (회색). 마지막 layer는 generation 특화라 perception에 불필요.*
+
 **왜 이게 작동하나?**
 - 최근 연구 (El-Nouby 2024, Bolya 2025, Rajasegaran 2025): VLM의 best downstream feature는 마지막 layer가 아닐 수 있다
 - Robot 제어에 필요한 spatial/semantic feature가 중간층(layer 8 정도)에서 이미 충분
@@ -265,6 +268,9 @@ Global 이미지 (resize한 전체 384×384)
 ##### 추가 압축: Pixel Shuffle
 
 Tiling 제거 후에도 frame당 256 tokens는 여전히 큼. SmolVLA는 한 번 더 압축.
+
+![SmolVLA Pixel Shuffle](figures/smolvla_pixel_shuffle.svg)
+*2×2 인접 patch를 한 그룹으로 묶어 channel 방향으로 concat → linear projection. 256 → 64 token (¼). 정보 손실 거의 없이 transformer 비용 1/16.*
 
 **Pixel shuffle** (원래 super-resolution 기법, Shi 2016):
 
@@ -397,6 +403,9 @@ action chunk 안에서 미래 action token에 attend하지 못하게 → leakage
 #### 3.4.3 Action Expert — Per-Block 상세 구조 (VLM feature는 어떻게 흘러 들어가는가)
 
 여기가 이번 정독에서 가장 중요한 부분. 단계별로:
+
+![SmolVLA Action Expert Blocks](figures/smolvla_action_expert_blocks.svg)
+*CA → SA → CA → SA 4-block stack. VLM features (왼쪽)는 모든 CA의 K,V로 한 번 계산되어 reuse. AdaLN(τ)은 각 block에서 시간 정보 주입.*
 
 ##### (1) Input 준비 — 3종류의 데이터
 
@@ -631,6 +640,9 @@ VLM hidden dim $d$ 대비:
 → 0.5~0.75d 사이가 sweet spot. 0.25d로 너무 줄이면 capacity 부족.
 
 ### 3.5 핵심 모듈 3: Asynchronous Inference
+
+![SmolVLA Async vs Sync Inference](figures/smolvla_async_inference.svg)
+*Sync mode (위): inference 동안 robot idle. Async mode (아래): inference (policy server)와 action 실행 (robot client)이 병렬 — robot은 항상 실행 중.*
 
 **문제**: 보통 robot policy 추론은 sync 방식:
 1. Observation $o_t$ 캡처

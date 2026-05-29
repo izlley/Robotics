@@ -34,7 +34,7 @@
 - [Pod 환경 제약](preferences/pod-environment.md) — CephFS만 영구, H200 kubectl-only, offload 금지 등
 - [Summary 작성 스타일](preferences/summary-style.md) — md 요약이 학습 교재. self-contained, 수식·예시·analogy·메커니즘 포함, 400~800줄 권장
 - [Light 코드 체크인 정책](preferences/light-code-checkpoints.md) — 이론 정독 중간에 5~10분 가벼운 inference 체크인. 환경 setup 없이 from_pretrained + 1회 forward만. 본격 hands-on은 Track A 완료 후
-- [ASCII Diagram Alignment 규칙](preferences/diagram-alignment.md) — Box drawing에서 한글/CJK/Unicode 혼용 금지. 정렬 보장 위해 indent+arrow 또는 markdown table 우선
+- [Diagram Alignment + SVG 생성 정책](preferences/diagram-alignment.md) — ASCII art 정렬 한계 → matplotlib + SVG 직접 생성 default 채택. `reports/papers/figures/` 위치, `_style.py` helper로 일관 style. NanumGothic 한글, ✓/✗ 대신 OK/NO 텍스트
 
 ## References
 

@@ -2,7 +2,7 @@
 
 > **다음 세션 첫 명령**: 이 파일을 먼저 읽고, 학습 계획은 [`ROADMAP.md`](ROADMAP.md) 참조. 이어서 [`memory/INDEX.md`](memory/INDEX.md) → 가장 최근 `sessions/*.md` 1~2개 순서로 읽어 컨텍스트 복원하세요.
 >
-> **Last updated**: 2026-05-26 (session-011, openpi를 Phase 5.5 + Track B에 추가)
+> **Last updated**: 2026-05-29 (session-012, 5편 paper에 17개 SVG figure embed)
 >
 > **이 파일의 역할**: "지금 어디" 만 짧게. 자세한 계획은 [ROADMAP.md](ROADMAP.md), 결정 이력은 [memory/decisions/](memory/decisions/).
 
@@ -21,6 +21,7 @@
 
 ## 3. 최근 완료 (시간 역순)
 
+- session-012 (2026-05-29): **5편 paper에 17개 SVG figure 생성 + embed**. matplotlib + NanumGothic 기반 reproducible workflow. `_style.py` helper module + paper별 generation script. `reports/papers/figures/README.md` 작성.
 - session-011 (2026-05-26): **openpi를 Phase 5.5 + Track B에 명시적 포함**. π0 시리즈 4편 hands-on에 핵심 stack. Track B에 LeRobot + openpi 병행 + stack 선택 가이드 명시. ROADMAP + extended-curriculum memory 동시 갱신.
 - session-010 (2026-05-26): **π0.5 정독** (PI 2025). reports/papers/pi0_5.md (~900줄) + learnings 3건 (co-training quantity vs diversity, hybrid FAST+Flow, hierarchical inference). Open-world generalization 달성 — unseen real homes에서 10-15분 multi-stage cleaning 성공.
 - session-009 (2026-05-23): **π0 정독** (Black 2024, PI). reports/papers/pi0.md (~900줄) + learnings 3건 (MoE single transformer, block-wise causal attention, pre/post training 분리). Flow matching paradigm의 robotics anchor.
