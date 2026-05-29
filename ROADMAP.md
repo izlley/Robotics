@@ -1,7 +1,7 @@
 # ROADMAP — VLA / RFM 학습 계획
 
 > **Single source of truth.** 학습 계획에 대한 모든 정보는 이 파일에 통합됩니다. 매 session 종료 시 갱신.
-> **Last updated**: 2026-05-26 (session-010, π0.5 정독 완료 — 5/8)
+> **Last updated**: 2026-05-26 (session-011, openpi를 Phase 5.5 + Track B에 명시적 포함)
 >
 > 관련 문서:
 > - [`CLAUDE.md`](CLAUDE.md) — 프로젝트 헌법 (변경 거의 없음)
@@ -123,38 +123,51 @@ VLA = "관측 → action" vs World Model = "관측+action → 다음 관측". RF
 
 ### Phase 5.5 — Pre-Track-B Infrastructure Reading (Track B 진입 직전)
 
-이론(paradigm/model)이 아닌 **system/library/infrastructure** 자료를 정독하여 Track B 진입 비용 ↓.
+이론(paradigm/model)이 아닌 **system/library/infrastructure** 자료를 정독하여 Track B 진입 비용 ↓. **본 프로젝트 8편 중 5편 (SmolVLA + π0 시리즈 4편) hands-on의 핵심 stack이므로 필수**.
 
 | # | 자료 | 출처 | 역할 |
 |---|---|---|---|
-| 1 | **LeRobot paper** (Cadene et al.) | arXiv:2602.22818 (2026-02-26) | Track B의 메인 stack 자체. SmolVLA 저자팀이 만든 end-to-end robot learning library. Hardware ↔ Data ↔ Algorithm 통합 관점 ★ |
-| 2 (옵션) | **openpi tech report** (Physical Intelligence) | 미정 | π0 시리즈의 reference 구현. 사용 결정 시 정독 |
-| 3 (옵션) | **NVIDIA Isaac Sim / Lab docs** | NVIDIA 공식 | 시뮬레이션 환경. GR00T N1 hands-on 진입 시 |
+| 1 | **LeRobot paper** (Cadene et al.) | arXiv:2602.22818 (2026-02-26) | SmolVLA / OpenVLA 호환 stack. Hardware ↔ Data ↔ Algorithm 통합 관점 ★ |
+| 2 | **openpi repo + tech blog** (Physical Intelligence) | https://github.com/Physical-Intelligence/openpi | **π0 / π0.5 / π★0.6 reference 구현**. 본 프로젝트 8편 중 4편 hands-on에 필수 ★★ |
+| 3 (옵션) | **NVIDIA Isaac Sim / Lab docs** | NVIDIA 공식 | GR00T N1 hands-on 시 |
 
 **작성 규칙**:
 - 9-섹션 풀 템플릿 ✗. **System paper용 별도 양식** (300-400줄, stack components / abstractions / API / hands-on relevance 중심).
-- 또는 `reports/synthesis/` 안에 통합 정리 (Phase 5 synthesis 일부로)
+- LeRobot, openpi 각각 별도 요약. 차이점 비교표 포함 (예: dataset format, action expert 구현 방식, RL recipe 지원).
 - LLM 도구 analogy 포함 (HuggingFace transformers와의 비교 등)
 
 **왜 이 시점인가**:
-- Track B의 B1(환경 setup)이 부드러워짐 — LeRobot abstraction을 미리 익혀둠
-- SmolVLA + LeRobot이 한 set으로 머릿속 묶임 (SmolVLA 정독에서 다룬 async inference, multi-camera 표준화 출처가 LeRobot)
+- Track B의 B1(환경 setup)이 부드러워짐 — LeRobot/openpi abstraction을 미리 익혀둠
+- SmolVLA + LeRobot이 한 set, π0 시리즈 + openpi가 다른 set으로 머릿속 묶임
 - 너무 일찍 (예: Phase 3 중간) 읽으면 추상적이라 흐려짐
+- π0 시리즈 정독 직후 (Phase 4 후) openpi를 읽으면 paper와 implementation의 1:1 매칭이 가장 효과적
 
 ### Track B — Hands-on (이론 종료 후)
 
-R&D 직무를 위한 full reproduction 수준 (단순 inference smoke test 아님):
+R&D 직무를 위한 full reproduction 수준 (단순 inference smoke test 아님). **두 stack 병행** — LeRobot (SmolVLA / OpenVLA) + openpi (π0 시리즈).
 
 | Session | 작업 |
 |---|---|
-| B1 | 환경 setup — LeRobot install, OpenVLA repo, simulators (LIBERO/RoboCasa) |
-| B2 | SmolVLA / OpenVLA inference + LoRA fine-tune 재현 |
-| B3 | 작은 from-scratch pretrain (data mixing ratio sweep) |
-| B4 | RL fine-tune 재현 (Q-Transformer 또는 RECAP) |
-| B5 | Architecture ablation (layer skipping N sweep, CA/SA 비율, flow vs diffusion head) |
+| B1 | 환경 setup — **LeRobot install** (SmolVLA, OpenVLA 호환) + **openpi install** (π0/π0.5/π★0.6 호환) + OpenVLA 공식 repo + simulators (LIBERO/RoboCasa) + HF transformers/peft/bitsandbytes |
+| B2 | Inference + LoRA fine-tune 재현 — SmolVLA (LeRobot) / OpenVLA (HF+peft) / **π0 또는 π0.5 (openpi)** |
+| B3 | 작은 from-scratch pretrain — SmolVLA recipe (LeRobot) 또는 **openpi의 π0.5 small variant**. Data mixing ratio sweep |
+| B4 | RL fine-tune 재현 — **openpi의 RECAP** (π★0.6 알고리즘 자연 fit) 또는 Q-Transformer |
+| B5 | Architecture ablation — layer skipping N sweep (SmolVLA), CA/SA 비율 (SmolVLA), flow vs diffusion head (π0 vs GR00T-style), τ injection (MLP vs RMSNorm) |
 | B6 | 결과 분석 + [memory/learnings/](memory/learnings/) 에 실전 발견 기록 |
 
-추정: 10-20 sessions (이론 turn보다 길고 불확실).
+**Stack 선택 가이드**:
+
+| Hands-on 대상 | 권장 stack |
+|---|---|
+| RT-2 | 재현 불가 (closed). OpenVLA로 대체 |
+| OpenVLA | OpenVLA 공식 repo (HF transformers + peft) |
+| SmolVLA | **LeRobot** |
+| π0, π0.5 | **openpi** ★ |
+| π★0.6 (RECAP) | **openpi** (PI 알고리즘이라 자연 fit) ★ |
+| π0.7 | **openpi** (when released) |
+| GR00T N1 | NVIDIA Isaac Sim / NVIDIA Lab |
+
+추정: 10-20 sessions (이론 turn보다 길고 불확실). LeRobot + openpi 두 stack을 다루므로 B1 환경 setup이 단일 stack 대비 1.5-2x 시간 소요 가능.
 
 **Light 코드 체크인**: 이론 중간에 5-10분 inference smoke test 끼울 수 있음 ([memory/preferences/light-code-checkpoints.md](memory/preferences/light-code-checkpoints.md)).
 
@@ -260,3 +273,4 @@ R&D 책무 6 axis에 대한 cover 비율:
 | 2026-05-23 | session-009 | **π0 정독** (~900줄 요약, MoE single transformer + block-wise causal + flow matching τ shifted Beta + pre/post training 분리) — 4/8 완료 |
 | 2026-05-23 | (interim) | Diagram alignment preference 추가 (CJK/Unicode 혼용 시 정렬 깨짐 방지) |
 | 2026-05-26 | session-010 | **π0.5 정독** (~900줄 요약, 5+ source co-training + hybrid FAST/Flow + hierarchical inference + adaptive RMSNorm + 진짜 가정집 검증) — 5/8 완료 |
+| 2026-05-26 | session-011 | **openpi를 Phase 5.5 + Track B에 명시적 포함**. π0 시리즈 4편 hands-on에 핵심 stack. Track B에 두 stack 병행 (LeRobot + openpi) 명시 |

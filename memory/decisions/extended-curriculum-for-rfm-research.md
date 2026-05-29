@@ -115,19 +115,28 @@ Phase 5 — Synthesis (이론 종합):
   → reports/synthesis/evaluation-protocols.md
   → reports/synthesis/world-model-vs-vla.md (옵션 3 추가)
 
-Phase 5.5 — Pre-Track-B Infrastructure (2026-05-23 추가):
-  → LeRobot paper (Cadene 2026, arXiv:2602.22818) ★
-  → (옵션) openpi tech report, NVIDIA Isaac docs
-  - System paper, 300-400줄 정도. 9-섹션 풀 템플릿 사용 안 함
-  - 이유: Track B의 main stack 자체에 대한 이해 선행 → B1 환경 setup 비용 ↓
-  - SmolVLA 저자팀의 라이브러리이므로 SmolVLA 정독과 연결성 높음
+Phase 5.5 — Pre-Track-B Infrastructure (2026-05-23 추가, 2026-05-26 openpi 추가):
+  → LeRobot paper (Cadene 2026, arXiv:2602.22818) ★ — SmolVLA/OpenVLA stack
+  → openpi repo + tech blog (Physical Intelligence) ★★ — π0 시리즈 4편 reference 구현
+  → (옵션) NVIDIA Isaac docs — GR00T N1 hands-on 시
+  - System paper/repo, 각 300-400줄 정도. 9-섹션 풀 템플릿 사용 안 함
+  - 이유: Track B의 main stacks (LeRobot + openpi) 둘 다 이해 선행 → B1 환경 setup 비용 ↓
+  - SmolVLA + LeRobot, π0 시리즈 + openpi가 한 set으로 머릿속 묶임
+  - π0 정독 직후 openpi를 읽으면 paper-implementation 1:1 매칭이 가장 효과적
 
-Track B — Hands-on:
-  → 환경 setup (LeRobot)
-  → SmolVLA / OpenVLA inference + LoRA reproduction
-  → Small from-scratch pretrain (mixing ablation)
-  → RL fine-tune (Q-Transformer / RECAP 재현)
-  → Architecture ablation
+Track B — Hands-on (두 stack 병행, 2026-05-26 openpi 추가):
+  → 환경 setup: LeRobot (SmolVLA/OpenVLA) + openpi (π0 시리즈) + simulators
+  → SmolVLA inference + LoRA (LeRobot)
+  → OpenVLA inference + LoRA (HF transformers + peft)
+  → π0 / π0.5 inference + LoRA (openpi) ★ 추가
+  → Small from-scratch pretrain (mixing ablation, openpi의 π0.5 small variant 등)
+  → RL fine-tune (openpi RECAP — π★0.6 알고리즘 / Q-Transformer)
+  → Architecture ablation (layer skip, CA/SA, flow vs diffusion head, τ injection)
+
+Stack 선택 가이드:
+  - SmolVLA, OpenVLA → LeRobot + HF
+  - π0, π0.5, π★0.6, π0.7 → openpi
+  - GR00T N1 → NVIDIA Isaac
 
 Track C — New idea:
   → 회사 업무 속에서 자연스럽게 (Track A+B 후)
